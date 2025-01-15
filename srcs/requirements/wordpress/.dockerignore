@@ -1,0 +1,10 @@
+# Ignore environment variables file
+.env
+
+# Ignore temporary files
+*.log
+*.tmp
+
+# Ignore Git-related files
+.git
+.gitignore

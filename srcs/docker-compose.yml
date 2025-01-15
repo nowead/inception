@@ -1,0 +1,118 @@
+services:
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    depends_on:
+      - wordpress
+    ports:
+      - 443:443
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: always
+    networks:
+      - inception-network
+
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception-network
+    restart: always
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  wordpress:
+    container_name: wordpress
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception-network
+
+#BONUS PART
+  # redis:
+  #   container_name: redis
+  #   build: ./requirements/bonus/redis
+  #   depends_on:
+  #     - wordpress
+  #   ports:
+  #    - '6379:6379'
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - wordpress_data:/var/www/html
+  #   networks:
+  #     - inception-network
+
+  # ftp-server:
+  #   build: requirements/bonus/ftp_server
+  #   container_name: ftp-server
+  #   ports:
+  #     - "21:21"
+  #     - "21100-21110:21100-21110"
+  #   volumes:
+  #     - "wordpress_data:/var/www/html"
+  #   networks:
+  #     - inception-network
+  #   restart: always
+  #   environment:
+  #     FTP_USR: ${FTP_USR}
+  #     FTP_PWD: ${FTP_PWD}
+
+  # adminer:
+  #   build: ./requirements/bonus/adminer
+  #   restart: always
+  #   depends_on:
+  #     - mariadb
+  #   expose:
+  #    - "9000"
+  #   networks:
+  #     - inception-network
+
+  # hugo:
+  #   container_name: hugo
+  #   build: ./requirements/bonus/hugo
+  #   restart: always
+  #   networks:
+  #     - inception-network
+
+  # static_page:
+  #   container_name: static_page
+  #   build: ./requirements/bonus/static_page
+  #   restart: always
+  #   networks:
+  #     - inception-network
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/damin/data/mysql
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/damin/data/wordpress
+      o: bind
+
+networks:
+  inception-network:
+    driver: bridge

@@ -1,0 +1,14 @@
+# Ignore environment variables file
+.env
+
+# Ignore temporary files
+*.log
+*.tmp
+
+# Ignore local database backups (should not be included in the build context)
+backup/
+*.sql
+
+# Ignore Git-related files
+.git
+.gitignore

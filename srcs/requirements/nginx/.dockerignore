@@ -1,0 +1,14 @@
+# Ignore environment variables file
+.env
+
+# Ignore temporary files and logs
+*.log
+*.tmp
+
+# Ignore SSL certificates (should be securely mounted, not copied)
+conf/ssl/*.crt
+conf/ssl/*.key
+
+# Ignore Git-related files
+.git
+.gitignore
