@@ -1,6 +1,5 @@
 FROM debian:bullseye
 
-# PHP 8.2 저장소 추가 및 설치
 RUN apt-get update && apt-get -y install --no-install-recommends \
     lsb-release \
     apt-transport-https \
