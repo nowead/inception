@@ -9,18 +9,13 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
     mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
 fi
 
-echo "Starting MariaDB temporarily..."
-mysqld_safe --user=mysql &
-sleep 10
+echo "Creating initialization SQL script..."
+cat <<EOF > /tmp/mysql-init.sql
+CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
+FLUSH PRIVILEGES;
+EOF
 
-echo "Setting up database and user..."
-mysql -u root --execute="CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};"
-mysql -u root --execute="CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';"
-mysql -u root --execute="GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';"
-mysql -u root --execute="FLUSH PRIVILEGES;"
-
-echo "Shutting down temporary MariaDB..."
-mysqladmin -uroot shutdown
-
-echo "Starting MariaDB foreground process..."
-exec mysqld_safe --user=mysql
+echo "Starting MariaDB with initialization script..."
+exec mysqld --user=mysql --init-file=/tmp/mysql-init.sql
